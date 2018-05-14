@@ -7,7 +7,7 @@ CONTEXT = "context"
 
 class KnowledgeGraph(object):
 
-    def _update_line(self, line, graph, context_so_far):
+    def _update_line(self, line, graph, name_to_entity, context_so_far):
         ent_pattern = r"\[[a-zA-Z0-9 ]+\([a-zA-Z ]+\[\d+\]\)\]?"
         ref_pattern = r"\[[a-zA-Z0-9 ]+\]"
         words = r"[a-zA-Z0-9 ]+"
@@ -31,6 +31,7 @@ class KnowledgeGraph(object):
             if metadata is None:
                 metadata = {'name': name, 'attributes': [], 'relation': {}, 'start_index': context_so_far.find(name)}
                 graph_entity[identifier] = metadata
+                name_to_entity[name] = class_type + "-" + identifier
 
             other_entities = [ent for pos, ent in enumerate(entities) if index != pos]
             for ent in other_entities:
@@ -47,6 +48,7 @@ class KnowledgeGraph(object):
                 for attr in attributes:
                     if attr not in metadata['attributes']:
                         metadata['attributes'].append((attr, context_so_far.rfind(attr)))
+                        name_to_entity[attr] = attr
 
     def _word_cleanup(self, lookups):
         result = []
@@ -78,6 +80,7 @@ class KnowledgeGraph(object):
 
     def prepare(self, path):
         graph = {}
+        name_to_entity = {}
         context_so_far = ""
         with open(path) as f:
             for line in f:
@@ -85,10 +88,10 @@ class KnowledgeGraph(object):
                     continue
 
                 context_so_far += (" " if context_so_far else "") + self._line_cleanup(line) + "."
-                self._update_line(line, graph, context_so_far)
+                self._update_line(line, graph, name_to_entity, context_so_far)
 
         graph[CONTEXT] = context_so_far
-        return graph
+        return graph, name_to_entity
 
     def prepare_edges(self, graph):
         nodes = []
@@ -206,7 +209,7 @@ class Dijkstra(object):
 if __name__ == "__main__":
     kg = KnowledgeGraph()
     path = "/Users/prasoon/CMU/10608/pt-allennlp/scripts/CMU/meeting.with_hints"
-    graph = kg.prepare(path)
+    graph, name_to_entity = kg.prepare(path)
     # print(json.dumps(graph))
     # sys.exit(0)
     nodes, edges, sorted_nodes = kg.prepare_edges(graph)

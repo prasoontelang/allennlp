@@ -37,9 +37,10 @@ class MultiSquadEmAndF1(Metric):
                     squad_eval.f1_score,
                     best_span_string,
                     answer_strings)
-        self._total_em += (exact_match / len(best_span_strings))
-        self._total_f1 += (f1_score / len(best_span_strings))
-        self._count += 1
+        self._total_em += (exact_match / (len(best_span_strings) + 1e-13))
+        self._total_f1 += (f1_score / (len(best_span_strings) + 1e-13))
+        if len(best_span_strings) != 0:
+            self._count += 1
 
     @overrides
     def get_metric(self, reset: bool = False) -> Tuple[float, float]:

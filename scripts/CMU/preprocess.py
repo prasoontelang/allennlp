@@ -112,11 +112,11 @@ class Preprocessor(object):
         context_so_far = ""
         entry = {"title": filename, "paragraphs": []}
         kg = KnowledgeGraph()
-        graph = kg.prepare(filename)
+        graph, name_to_entity = kg.prepare(filename)
         nodes, edges, sorted_nodes = kg.prepare_edges(graph)
         dj = Dijkstra(nodes, edges)
         shortest_path = dj.shortestPath(sorted_nodes)
-        entry["dijkstra"] = shortest_path
+        entry["dijkstra"] = {"dijkstra": shortest_path, "graph": name_to_entity}
         global ignored
         global total
         with open(filename) as f:
@@ -185,6 +185,8 @@ if __name__ == "__main__":
     for index, each_file in enumerate(files):
         if not os.path.isfile(each_file):
             print("Dir", each_file)
+            if each_file.startswith("."):
+                continue
             inner_files = os.listdir(path + "/" + each_file)
             for filename in inner_files:
                 if not filename.endswith("with_hints"):
@@ -192,6 +194,9 @@ if __name__ == "__main__":
                     continue
                 if filename.startswith('student'):
                     train_json = student_train_json
+                else:
+                    break
+                """
                 elif filename.startswith('bug'):
                     train_json = bug_train_json
                 elif filename.startswith('department'):
@@ -203,10 +208,12 @@ if __name__ == "__main__":
                 else:
                     print("Ignored file", filename)
                     continue
+                """
 
                 if len(train_json['data']) > 100:
                     if filename.startswith('student'):
                         train_json = student_dev_json
+                    """
                     elif filename.startswith('bug'):
                         train_json = bug_dev_json
                     elif filename.startswith('department'):
@@ -219,6 +226,7 @@ if __name__ == "__main__":
                         print("Ignored file", filename)
                         continue
 
+                    """
                     if len(train_json['data']) > 20:
                         continue
 
@@ -230,19 +238,25 @@ if __name__ == "__main__":
     path += "/"
     print(ignored, "/", total)
     save_json(student_train_json, path + 'final/student_train.json')
+    """
     save_json(bug_train_json, path + 'final/bug_train.json')
     save_json(dept_train_json, path + 'final/department_train.json')
     save_json(meet_train_json, path + 'final/meetings_train.json')
     save_json(shop_train_json, path + 'final/shopping_train.json')
+    """
 
     save_json(student_dev_json, path + 'final/student_dev.json')
+    """
     save_json(bug_dev_json, path + 'final/bug_dev.json')
     save_json(dept_dev_json, path + 'final/department_dev.json')
     save_json(meet_dev_json, path + 'final/meetings_dev.json')
     save_json(shop_dev_json, path + 'final/shopping_dev.json')
+    """
 
+    """
     train = {'data': student_train_json['data'] + bug_train_json['data'] + dept_train_json['data'] +
             meet_train_json['data']}
     dev = shop_train_json
     save_json(train, path + 'final/train.json')
     save_json(dev, path + 'final/dev.json')
+    """
